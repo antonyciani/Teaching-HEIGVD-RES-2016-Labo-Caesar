@@ -1,6 +1,7 @@
 package ch.heigvd.res.caesar.client;
 
 import ch.heigvd.res.caesar.protocol.Protocol;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,7 +10,6 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Scanner;
-
 /**
  *
  * @author Olivier Liechti (olivier.liechti@heig-vd.ch)
@@ -27,11 +27,8 @@ public class CaesarClient {
     int clientId;
     boolean keyReceived = false;
     int secretKey = -1;
+    Scanner keyboard = new Scanner(System.in);
 
-
-    class NotificationListener implements Runnable {
-
-        @Override
         public void run() {
             String notification;
             try {
@@ -44,8 +41,9 @@ public class CaesarClient {
                             keyReceived = true;
                             LOG.log(Level.INFO, "Key received");
                             LOG.log(Level.INFO, "Key is " + secretKey);
-                            
+
                         }
+                       sendMsg("HELLOOOO");
                     }
                     else{
                         LOG.log(Level.INFO, "Server echoed crypted message is: " + notification);
@@ -54,9 +52,12 @@ public class CaesarClient {
                         if(notification.equals(Protocol.CMD_QUIT)){
                             disconnect();
                         }
-                        
+                       String msg = keyboard.nextLine();
+                       sendMsg(msg);
+
                     }
-                    
+
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -65,7 +66,6 @@ public class CaesarClient {
                 cleanup();
             }
         }
-    }
 
 
     public void connect(String serverAddress, int serverPort) {
@@ -80,7 +80,7 @@ public class CaesarClient {
             return;
         }
         // Let us start a thread, so that we can listen for server notifications
-        new Thread(new NotificationListener()).start();
+        run();
         
         
     }
@@ -132,15 +132,9 @@ public class CaesarClient {
         LOG.info("Caesar client starting...");
         LOG.info("Protocol constant: " + Protocol.DEFAULT_PORT);
         CaesarClient cc = new CaesarClient();
+        //cc.connect("10.192.94.149", Protocol.DEFAULT_PORT);
         cc.connect("localhost", Protocol.DEFAULT_PORT);
-        LOG.info("CONNECT DONE");
-        while(!cc.keyReceived);
-        cc.sendMsg("HELLOOOO");
-        while(cc.connected){
-            Scanner keyboard = new Scanner(System.in);
-            String msg = keyboard.nextLine();
-            cc.sendMsg(msg);
-        }
+
         
     }
 
